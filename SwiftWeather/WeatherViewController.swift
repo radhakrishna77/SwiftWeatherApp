@@ -1,7 +1,4 @@
-//
-//  Created by Jake Lin on 8/18/15.
-//  Copyright © 2015 Jake Lin. All rights reserved.
-//
+
 
 import UIKit
 import CoreSpotlight
@@ -72,6 +69,7 @@ class WeatherViewController: UIViewController {
   // MARK: ViewModel
   var viewModel: WeatherViewModel? {
     didSet {
+        
      viewModel?.location.observe {
         [unowned self] in
         self.locationLabel.text = $0

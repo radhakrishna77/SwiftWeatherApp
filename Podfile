@@ -3,6 +3,7 @@ use_frameworks!
 
 target 'SwiftWeather' do
     pod 'SwiftyJSON'
+    pod '
 end
 
 abstract_target 'Tests' do
