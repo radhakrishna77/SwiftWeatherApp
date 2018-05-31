@@ -98,3 +98,4 @@ $ echo "your-openweathermap-appid" > .access_tokens/openweathermap
 * Swift 4
 
 
+# SwiftWeatherApp
