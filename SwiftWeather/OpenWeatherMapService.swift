@@ -1,7 +1,4 @@
-//
-// Created by Jake Lin on 9/2/15.
-// Copyright (c) 2015 Jake Lin. All rights reserved.
-//
+
 
 import Foundation
 import CoreLocation
@@ -18,6 +15,8 @@ struct OpenWeatherMapService: WeatherServiceProtocol {
       guard let forecastTempDegrees = json["list"][index]["main"]["temp"].double,
         let rawDateTime = json["list"][index]["dt"].double,
         let forecastCondition = json["list"][index]["weather"][0]["id"].int,
+        let pressure = json["list"][index]["main"]["pressure"].double,
+        let humidity = json["list"][index]["main"]["humidity"].double,
         let forecastIcon = json["list"][index]["weather"][0]["icon"].string else {
           break
       }
@@ -28,10 +27,13 @@ struct OpenWeatherMapService: WeatherServiceProtocol {
       let forecastTimeString = ForecastDateTime(rawDateTime).shortTime
       let weatherIcon = WeatherIcon(condition: forecastCondition, iconString: forecastIcon)
       let forcastIconText = weatherIcon.iconText
+        let foreCastPressure = "P: \(pressure)mb"
+        let forecastHumidity = "H: \(humidity)%"
 
       let forecast = Forecast(time: forecastTimeString,
                           iconText: forcastIconText,
-                       temperature: forecastTemperature.degrees)
+                       temperature: forecastTemperature.degrees,
+                       pressure: foreCastPressure, humidity: forecastHumidity)
 
       forecasts.append(forecast)
     }
@@ -45,7 +47,7 @@ struct OpenWeatherMapService: WeatherServiceProtocol {
 
     guard let url = generateRequestURL(location) else {
       let error = SWError(errorCode: .urlError)
-      completionHandler(nil, error)
+      completionHandler(nil, nil, error)
       return
     }
 
@@ -53,21 +55,23 @@ struct OpenWeatherMapService: WeatherServiceProtocol {
     let task = session.dataTask(with: url) { (data, response, error) in
       // Check network error
       guard error == nil else {
+       let weatherForeCastModel =  CoreDataStack.sharedInstance.fetchRequestFromDb()
         let error = SWError(errorCode: .networkRequestFailed)
-        completionHandler(nil, error)
+        completionHandler(nil, weatherForeCastModel, error)
+        
         return
       }
       
       // Check JSON serialization error
       guard let data = data else {
         let error = SWError(errorCode: .jsonSerializationFailed)
-        completionHandler(nil, error)
+        completionHandler(nil, nil, error)
         return
       }
 
       guard let json = try? JSON(data: data) else {
         let error = SWError(errorCode: .jsonParsingFailed)
-        completionHandler(nil, error)
+        completionHandler(nil, nil, error)
         return
       }
 
@@ -76,9 +80,11 @@ struct OpenWeatherMapService: WeatherServiceProtocol {
         let country = json["city"]["country"].string,
         let city = json["city"]["name"].string,
         let weatherCondition = json["list"][0]["weather"][0]["id"].int,
+        let pressure = json["list"][0]["main"]["pressure"].double,
+        let humidity = json["list"][0]["main"]["humidity"].double,
         let iconString = json["list"][0]["weather"][0]["icon"].string else {
           let error = SWError(errorCode: .jsonParsingFailed)
-          completionHandler(nil, error)
+          completionHandler(nil, nil, error)
           return
       }
 
@@ -86,13 +92,20 @@ struct OpenWeatherMapService: WeatherServiceProtocol {
       let temperature = Temperature(country: country, openWeatherMapDegrees:tempDegrees)
       weatherBuilder.temperature = temperature.degrees
       weatherBuilder.location = city
+        let pressureString = "P: \(pressure)mb"
+        let humidityString = "H: \(humidity)%"
+        weatherBuilder.pressure = pressureString
+        weatherBuilder.humidity = humidityString
 
       let weatherIcon = WeatherIcon(condition: weatherCondition, iconString: iconString)
       weatherBuilder.iconText = weatherIcon.iconText
 
       weatherBuilder.forecasts = self.getFirstFourForecasts(json)
 
-      completionHandler(weatherBuilder.build(), nil)
+    CoreDataStack.sharedInstance.saveWeatherForcaste(with: weatherBuilder)
+        
+      completionHandler(weatherBuilder.build(), nil, nil)
+        
     }
 
     task.resume()

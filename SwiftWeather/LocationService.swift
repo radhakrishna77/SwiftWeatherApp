@@ -1,7 +1,4 @@
-//
-//  Created by Jake Lin on 9/2/15.
-//  Copyright © 2015 Jake Lin. All rights reserved.
-//
+
 
 import Foundation
 import CoreLocation

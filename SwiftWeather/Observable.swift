@@ -1,7 +1,4 @@
-//
-//  Created by Jake Lin on 8/27/15.
-//  Copyright © 2015 Jake Lin. All rights reserved.
-//
+
 
 import Foundation
 

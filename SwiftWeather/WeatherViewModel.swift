@@ -1,7 +1,4 @@
-//
-//  Created by Jake Lin on 8/26/15.
-//  Copyright © 2015 Jake Lin. All rights reserved.
-//
+
 
 import Foundation
 import CoreLocation
@@ -58,6 +55,21 @@ class WeatherViewModel {
       }
       forecasts.value = tempForecasts
   }
+  
+  fileprivate func updateFromDB(_ weatherForecasts: [WeatherForecast]) {
+    hasError.value = false
+    errorMessage.value = nil
+    let weatherObj =  weatherForecasts.first
+    location.value = (weatherObj?.city)!
+    iconText.value = (weatherObj?.iconText)!
+    temperature.value = (weatherObj?.temperature!)!
+
+    var viewModels = [ForecastViewModel]()
+    for weatherData in weatherForecasts {
+      viewModels.append(ForecastViewModel(Forecast.init(time: weatherData.dateId!, iconText: weatherData.iconText!, temperature: weatherData.temperature!, pressure: weatherData.pressure!, humidity: weatherData.humidity!)))
+    }
+    forecasts.value = viewModels
+  }
 
   fileprivate func update(_ error: SWError) {
       hasError.value = true
@@ -83,11 +95,14 @@ class WeatherViewModel {
 // MARK: LocationServiceDelegate
 extension WeatherViewModel: LocationServiceDelegate {
   func locationDidUpdate(_ service: LocationService, location: CLLocation) {
-    weatherService.retrieveWeatherInfo(location) { (weather, error) -> Void in
+    weatherService.retrieveWeatherInfo(location) { (weather, weatherForecast, error) -> Void in
       DispatchQueue.main.async(execute: {
         if let unwrappedError = error {
           print(unwrappedError)
           self.update(unwrappedError)
+          if let _ = weatherForecast {
+            self.updateFromDB(weatherForecast!)
+          }
           return
         }
 

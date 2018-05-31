@@ -1,7 +1,4 @@
-//
-//  Created by Jake Lin on 8/22/15.
-//  Copyright © 2015 Jake Lin. All rights reserved.
-//
+
 
 import UIKit
 
@@ -13,7 +10,9 @@ import UIKit
   @IBOutlet weak var iconLabel: UILabel!
   @IBOutlet weak var temperatureLabel: UILabel!
 
-  // MARK: - init
+    @IBOutlet weak var humidityLabel: UILabel!
+    @IBOutlet weak var pressureLabel: UILabel!
+    // MARK: - init
   override init(frame: CGRect) {
     super.init(frame: frame)
     view = loadViewFromNib()
@@ -54,6 +53,16 @@ import UIKit
         [unowned self] in
         self.temperatureLabel.text = $0
       }
+        
+        viewModel?.pressure.observe {
+            [unowned self] in
+            self.pressureLabel.text = $0
+        }
+        
+        viewModel?.humidity.observe {
+            [unowned self] in
+            self.humidityLabel.text = $0
+        }
     }
   }
 

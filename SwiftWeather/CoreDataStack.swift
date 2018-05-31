@@ -1,16 +1,11 @@
-//
-//  CoreDataStack.swift
-//  CoreDataTutorialPart1Final
-//
-//  Created by James Rochabrun on 3/1/17.
-//  Copyright © 2017 James Rochabrun. All rights reserved.
-//
+
 
 import Foundation
 import UIKit
 import CoreData
 
 class CoreDataStack: NSObject {
+    
     
     static let sharedInstance = CoreDataStack()
     private override init() {}
@@ -23,7 +18,8 @@ class CoreDataStack: NSObject {
          application to it. This property is optional since there are legitimate
          error conditions that could cause the creation of the store to fail.
          */
-        let container = NSPersistentContainer(name: "CoreDataTutorialPart1Final")
+        
+        let container = NSPersistentContainer(name: "coredatamodel")
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
                 // Replace this implementation with code to handle the error appropriately.
@@ -56,6 +52,59 @@ class CoreDataStack: NSObject {
                 let nserror = error as NSError
                 fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
             }
+        }
+    }
+    
+    public func saveWeatherForcaste(with weatherBuilder: WeatherBuilder) {
+        deleteAllRecords()
+        let context = persistentContainer.viewContext as NSManagedObjectContext
+        for foreCastObj in weatherBuilder.forecasts! {
+            
+            let entity = NSEntityDescription.entity(forEntityName: "WeatherForecast", in: context)
+            
+            let obj: WeatherForecast = WeatherForecast(entity: entity!, insertInto: context)
+            obj.city = weatherBuilder.location
+            obj.country = weatherBuilder.location
+            
+            obj.dateId = foreCastObj.time
+            obj.humidity = foreCastObj.humidity
+            obj.iconText = foreCastObj.iconText
+            obj.pressure = foreCastObj.pressure
+            obj.temperature = foreCastObj.temperature
+            self.saveContext()
+        }
+        
+    }
+    
+    public func fetchRequestFromDb() -> [WeatherForecast] {
+        
+        let context = persistentContainer.viewContext as NSManagedObjectContext
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "WeatherForecast")
+        //request.predicate = NSPredicate(format: "age = %@", "12")
+        request.returnsObjectsAsFaults = false
+        do {
+            let result = try context.fetch(request)
+            
+            return result as! [WeatherForecast]
+            
+        } catch {
+            
+            print("Failed")
+        }
+
+        return [WeatherForecast]()
+    }
+    
+    public func deleteAllRecords() {
+        //getting context from your Core Data Manager Class
+        let managedContext = persistentContainer.viewContext as NSManagedObjectContext
+        let deleteFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "WeatherForecast")
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: deleteFetch)
+        do {
+            try managedContext.execute(deleteRequest)
+            try managedContext.save()
+        } catch {
+            print ("There is an error in deleting records")
         }
     }
 }

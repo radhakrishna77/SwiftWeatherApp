@@ -1,10 +1,4 @@
-//
-//  AppDelegate.swift
-//  SwiftWeather
-//
-//  Created by Jake Lin on 8/18/15.
-//  Copyright © 2015 Jake Lin. All rights reserved.
-//
+
 
 import UIKit
 

@@ -1,7 +1,5 @@
-//
-//  Created by Tiago Martinho on 4/1/16.
-//  Copyright © 2015 Jake Lin. All rights reserved.
-//
+
+
 
 import Foundation
 
